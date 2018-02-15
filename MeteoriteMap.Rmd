@@ -1,0 +1,41 @@
+---
+title: "Meteorite Map"
+author: "Trent Parkinson"
+date: "February 15, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+The below map is of meteorite landings from 1986 through 2016 recorded by the [The Meteoritical Society](http://www.meteoriticalsociety.org/). The original dataset contained values well before 1986, but for the purpose of displaying frequency of meteorite landings the data was removed since the events before 1986 were not recorded regularly. The dataset was also filtered for irregularities, removing values that did not have accurate latitude and longitudinal coordinates.
+
+```{r, fig.width=9, fig.align='center', message=FALSE}
+library(leaflet)
+
+options("scipen"=100, "digits"=4)
+
+meteorites <- read.csv("meteorite-landings.csv")
+meteorites_sub <- meteorites[,c(1,5,7,8,9)]
+
+keep <- complete.cases(meteorites_sub)
+meteorites_sub <- meteorites_sub[keep,]
+meteorites_sub <- subset(meteorites_sub, year >= 1986 & year <=2016)
+meteorites_sub <- subset(meteorites_sub, reclong <= 180 & reclong >= -180 & (reclat != 0 | reclong != 0))
+meteorites_sub <- meteorites_sub[order(meteorites_sub$mass, decreasing = TRUE),]
+
+map_meteorites <- meteorites_sub
+names(map_meteorites) <- c("name","mass","year","lat","lng")
+
+map_meteorites %>%
+    leaflet() %>%
+    addTiles(options = providerTileOptions(minZoom = 2, maxZoom = 12)) %>%
+    setView(lat=38.350033, lng=-98.6500523, 4) %>%
+    addCircles(weight = 1,
+               radius = sqrt(map_meteorites$mass)*400,
+               popup = paste("Meteorite Name:",map_meteorites$name,"<br>",
+                             "Year Landed:",map_meteorites$year,"<br>",
+                             "Mass (grams):",map_meteorites$mass))
+```
