@@ -36,3 +36,11 @@ a:hover {
 slides > slide:not(.nobackground):after {
   color: #b2b2b2;
 }
+
+slides > slide {
+	color: #232b2b;
+}
+
+table.rmdtable tr > td:first-child, table th {
+	color: #0c0c0c;
+}
